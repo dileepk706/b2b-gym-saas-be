@@ -29,9 +29,10 @@ class GymController implements IGymController {
   };
 
   getGyms = async (req: Request, res: Response): Promise<any> => {
-    const gyms = await this.gymService.find({
-      tenant_id: req.user.tenant_id as string,
-    });
+    const gyms = await this.gymService.find(
+      req.user.tenant_id as string,
+      req.user.user_id as string,
+    );
     return sendSuccess(res, { gyms }, 'Gyms fetched successfully', 200);
   };
 }
