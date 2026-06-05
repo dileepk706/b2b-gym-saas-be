@@ -52,12 +52,9 @@ class GymRepositoryImpl implements IGymRepositoryImpl {
 
   find = async (tenant_id: string, user_id: string): Promise<Gym[]> => {
     const query = `SELECT DISTINCT
-  g.gym_id,
-  g.name,
-  g.address,
-  g.tenant_id
+  g.*
 FROM gyms g
-INNER JOIN staff s ON s.gym_id = g.gym_id
+INNER JOIN staff s ON s.gym_id = g.id
 WHERE s.user_id   = $1
   AND s.tenant_id = $2
 ORDER BY g.name ASC;`;

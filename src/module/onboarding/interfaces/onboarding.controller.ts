@@ -18,7 +18,7 @@ class OnboardingController implements IOnboardingController {
 
     const result = await this.onboardingFcade.createWorkspaceAndOnboardOwner(
       req.body,
-      req.user?.user_id,
+      req.user?.user_id as string,
     );
 
     return sendSuccess(res, result, 'Onboarded successfully', 200);

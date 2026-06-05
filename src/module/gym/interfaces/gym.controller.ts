@@ -15,17 +15,17 @@ class GymController implements IGymController {
 
     if (!gym) throw new ApiError('Gym not found', 404);
 
-    return sendSuccess(res, { result: gym }, 'Gym fetched successfully', 200);
+    return sendSuccess(res, gym, 'Gym fetched successfully', 200);
   }
 
   create = async (req: Request, res: Response): Promise<any> => {
     const gym = await this.gymService.create(req.body);
-    return sendSuccess(res, { result: gym }, 'Gym created successfully', 201);
+    return sendSuccess(res, gym, 'Gym created successfully', 201);
   };
 
   updateById = async (req: Request, res: Response): Promise<any> => {
     const gym = await this.gymService.updateById(req.params.id as string, req.body);
-    return sendSuccess(res, { result: gym }, 'Gym updated successfully', 200);
+    return sendSuccess(res, gym, 'Gym updated successfully', 200);
   };
 
   getGyms = async (req: Request, res: Response): Promise<any> => {
