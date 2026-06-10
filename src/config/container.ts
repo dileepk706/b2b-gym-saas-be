@@ -11,6 +11,7 @@ import registerStaffModule from '@/module/staff/staff.container.js';
 import registerRoleModule from '@/module/role/role.container.js';
 import DbSharedService from '@/shared/services/db.shared.service.js';
 import registerPermissionModule from '@/module/permissions/permission.container.js';
+import registerSubscriptionModule from '@/module/subscription/subscription.container.js';
 
 const registerDependencies = () => {
   container.registerInstance(Pool, pool);
@@ -23,6 +24,7 @@ const registerDependencies = () => {
   registerStaffModule(container);
   registerRoleModule(container);
   registerPermissionModule(container);
+  registerSubscriptionModule(container);
 };
 
 export default registerDependencies;
