@@ -1,4 +1,3 @@
-import { commonColumns, addTimestampTrigger } from '../migration-utils.js';
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
@@ -10,27 +9,12 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.createTable('roles', {
-    id: {
-      type: 'uuid',
-      default: pgm.func('gen_random_uuid()'),
-      primaryKey: true,
-    },
-    name: {
-      type: 'varchar(255)',
-      notNull: true,
-      unique: true,
-    },
-    ...commonColumns(pgm),
-  });
-
   pgm.sql(`
     INSERT INTO roles (name) VALUES 
-    ('owner'), 
-    ('manager'), 
-    ('trainer')
+    ('front desk'), 
+    ('receptionist')
+    ON CONFLICT (name) DO NOTHING;
   `);
-  addTimestampTrigger(pgm, 'roles');
 };
 
 /**
@@ -38,4 +22,8 @@ export const up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const down = (pgm) => {};
+export const down = (pgm) => {
+  pgm.sql(`
+    DELETE FROM roles WHERE name IN ('front desk', 'receptionist');
+  `);
+};

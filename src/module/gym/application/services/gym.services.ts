@@ -28,8 +28,8 @@ class GymService implements IGymService {
     return await this.gymRepositoryImpl.findOne(data, client);
   }
 
-  async find(gymFilters: GymPartial): Promise<Gym[]> {
-    return await this.gymRepositoryImpl.find(gymFilters);
+  async find(tenant_id: string, user_id: string): Promise<Gym[]> {
+    return await this.gymRepositoryImpl.find(tenant_id, user_id);
   }
 }
 

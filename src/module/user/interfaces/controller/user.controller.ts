@@ -17,7 +17,7 @@ class UserController implements IUserController {
 
   findOne = async (req: Request, res: Response) => {
     const result = await this.userService.findOne({
-      id: req.user?.user_id,
+      id: req.user?.user_id as string,
     });
     if (!result) throw new ApiError('User not found', httpStatus.NOT_FOUND);
     return sendSuccess(res, { user: result }, 'User fetched successfully', 200);

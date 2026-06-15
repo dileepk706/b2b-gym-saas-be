@@ -71,46 +71,6 @@ export const up = (pgm) => {
     },
     ...commonColumns(pgm),
   });
-
-  pgm.sql(`
-    INSERT INTO permissions (slug, "group") VALUES
-    ('staff.management', 'account'),
-    ('members.view', 'members'),
-    ('members.update', 'members'),
-    ('members.settings', 'members'),
-    ('members.checkin', 'members'),
-    ('view.invoice', 'members'),
-    ('payment.list', 'billing'),
-    ('payment.modify', 'billing'),
-    ('billing.settings', 'billing'),
-    ('functionality.front-desk', 'functionality'),
-    ('functionality.reports', 'functionality'),
-    ('gym.settings', 'gym'),
-    ('gym.schedule', 'gym'),
-    ('create.sale','point-of-sale'),
-    ('manage.products','point-of-sale'),
-    ('sale.settings','point-of-sale')
-    ON CONFLICT (slug) DO NOTHING;
-  `);
-
-  pgm.sql(`
-    INSERT INTO role_permissions (role_id, permission_id)
-    SELECT r.id, p.id 
-    FROM roles r, permissions p 
-    WHERE r.name = 'manager';
-
-    INSERT INTO role_permissions (role_id, permission_id)
-    SELECT r.id, p.id 
-    FROM roles r, permissions p 
-    WHERE r.name = 'trainer' 
-    AND p.slug IN ('members.view', 'gym.schedule', 'members.checkin');
-
-    INSERT INTO role_permissions (role_id, permission_id)
-    SELECT r.id, p.id 
-    FROM roles r, permissions p 
-    WHERE r.name = 'front desk' 
-    AND p.slug IN ('members.checkin','functionality.front-desk');
-  `);
 };
 
 /**

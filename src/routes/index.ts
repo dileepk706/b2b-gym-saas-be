@@ -14,8 +14,12 @@ import { roleRouteConfig } from '@/module/role/interfaces/route/role.routes.js';
 import { userAuthRouteConfig } from '@/module/user/interfaces/route/user.auth.routes.js';
 import { authorizeAdmin } from '@/shared/middleware/admin.middleware.js';
 import { gymGlobalRouteConfig } from '@/module/gym/interfaces/routes/gym-global.routes.js';
+import { subscriptionPlanRouteConfig } from '@/module/subscription/interfaces/route/subscription-plan.routes.js';
+import { subscriptionRouteConfig } from '@/module/subscription/interfaces/route/subscription.routes.js';
 
 const moduleRoutes: ModuleRouteConfig[] = [
+  subscriptionPlanRouteConfig,
+  subscriptionRouteConfig,
   gymGlobalRouteConfig,
   gymRouteConfig,
   userRouteConfig,
