@@ -50,17 +50,18 @@ class SubscriptionService implements ISubscriptionService {
 
       if (!tenant) throw new ApiError('Tenant not found', httpStatus.NOT_FOUND);
 
-      const subscription: Subscription = await this.subscriptionRepository.createOrUpdateSubscription(
-        {
-          tenant_id: tenantId,
-          plan_id: plan.id,
-          status: 'active',
-          starts_at: new Date(),
-          expires_at: null,
-          cancelled_at: null,
-        },
-        client,
-      );
+      const subscription: Subscription =
+        await this.subscriptionRepository.createOrUpdateSubscription(
+          {
+            tenant_id: tenantId,
+            plan_id: plan.id,
+            status: 'active',
+            starts_at: new Date(),
+            expires_at: null,
+            cancelled_at: null,
+          },
+          client,
+        );
 
       const featureFlags = await this.subscriptionRepository.replaceTenantFeatureFlags(
         tenantId,
@@ -92,16 +93,11 @@ class SubscriptionService implements ISubscriptionService {
     }
   };
 
-  getCurrentSubscription = async (
-    tenantId: string,
-  ): Promise<CurrentSubscriptionResult | null> => {
+  getCurrentSubscription = async (tenantId: string): Promise<CurrentSubscriptionResult | null> => {
     const client = await this.dbSharedService.getClient();
 
     try {
-      const subscription = await this.subscriptionRepository.findActiveByTenantId(
-        tenantId,
-        client,
-      );
+      const subscription = await this.subscriptionRepository.findActiveByTenantId(tenantId, client);
 
       if (!subscription || subscription.status !== 'active' || subscription.cancelled_at) {
         return null;
@@ -110,7 +106,10 @@ class SubscriptionService implements ISubscriptionService {
       const plan = await this.subscriptionPlanService.findByIdWithDetails(subscription.plan_id);
       if (!plan) throw new ApiError('Subscription plan not found', httpStatus.NOT_FOUND);
 
-      const feature_flags = await this.subscriptionRepository.findTenantFeatureFlags(tenantId, client);
+      const feature_flags = await this.subscriptionRepository.findTenantFeatureFlags(
+        tenantId,
+        client,
+      );
       const limits = await this.subscriptionRepository.findTenantLimits(tenantId, client);
 
       return {

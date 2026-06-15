@@ -41,8 +41,6 @@ class UserRepository implements IUserRepository {
       'tenant_id',
       'created_at',
       'updated_at',
-      'created_on',
-      'updated_on',
     ]);
 
     const result = await this.pool.query(query, values);

@@ -1,14 +1,18 @@
 import IOnboardingController from '@/module/onboarding/domain/onboarding.controller.interface.js';
 import IOnboardingFcade from '@/module/onboarding/domain/onboarding.fcade.interface.js';
 import { ApiError } from '@/shared/middleware/error_handler.js';
-import { sendSuccess } from '@/shared/response_handler.js';
+import { cookieHandler, sendSuccess } from '@/shared/response_handler.js';
 import { Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
 import httpStatus from 'http-status';
+import TokenService from '@/module/token/application/services/token.service.js';
 
 @injectable()
 class OnboardingController implements IOnboardingController {
-  constructor(@inject('IOnboardingFcade') private readonly onboardingFcade: IOnboardingFcade) {}
+  constructor(
+    @inject('IOnboardingFcade') private readonly onboardingFcade: IOnboardingFcade,
+    @inject('ITokenService') private readonly tokenService: TokenService,
+  ) {}
 
   createWorkspaceAndOnboardOwner = async (req: Request, res: Response): Promise<any> => {
     const tenant_id = req.user?.tenant_id;
@@ -16,12 +20,32 @@ class OnboardingController implements IOnboardingController {
     if (tenant_id || gym_id)
       throw new ApiError('You are already onboarded', httpStatus.BAD_REQUEST);
 
-    const result = await this.onboardingFcade.createWorkspaceAndOnboardOwner(
+    const { tenant, gym, user, staff } = await this.onboardingFcade.createWorkspaceAndOnboardOwner(
       req.body,
       req.user?.user_id as string,
     );
 
-    return sendSuccess(res, result, 'Onboarded successfully', 200);
+    const payLoad = {
+      user_id: user.id,
+      email: user.email,
+      tenant_id: tenant.id,
+      gym_id: gym.id,
+      role: 'admin',
+    };
+
+    const { accessToken, refreshToken } = await this.tokenService.generateAuthTokens(payLoad, {
+      ip: req.ip || '',
+      user_agent: req.get('User-Agent') || '',
+    });
+
+    cookieHandler(res, { refreshToken }, 'refresh_token');
+
+    return sendSuccess(
+      res,
+      { accessToken, refreshToken, tenant, gym, staff, user },
+      'Onboarded successfully',
+      200,
+    );
   };
 
   checkGymUrl = async (req: Request, res: Response): Promise<any> => {

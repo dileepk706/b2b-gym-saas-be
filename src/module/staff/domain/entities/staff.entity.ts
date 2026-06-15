@@ -10,8 +10,6 @@ type Staff = {
   check_in_code: number;
   created_at: Date;
   updated_at: Date;
-  created_on: number;
-  updated_on: number;
 };
 
 export default Staff;
