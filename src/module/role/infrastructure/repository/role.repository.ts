@@ -3,14 +3,16 @@ import { IRoleRepository } from '@/module/role/domain/interfaces/role.repository
 import { Pool } from 'pg';
 import { inject, injectable } from 'tsyringe';
 import { QueryExecutor } from '@/shared/types/database.js';
+import { insertQueryBuilder, queryBuilder } from '@/utils/db.psql.util.js';
 
 @injectable()
 class RoleRepository implements IRoleRepository {
   constructor(@inject(Pool) private readonly pool: Pool) {}
 
-  findOneByName = async (name: string, client?: QueryExecutor): Promise<Role> => {
+  findOne = async (role: Partial<Role>, client?: QueryExecutor): Promise<Role> => {
+    const { query, values } = queryBuilder('roles', role);
     const exec = client || this.pool;
-    const r = await exec.query('SELECT * FROM roles WHERE name=$1', [name]);
+    const r = await exec.query(query, values);
     return r.rows[0];
   };
 
@@ -20,10 +22,26 @@ class RoleRepository implements IRoleRepository {
     return r.rows[0];
   };
 
-  findAllStaffRoles = async (client?: QueryExecutor): Promise<Role[]> => {
+  findAll = async (role: Partial<Role> | null, client?: QueryExecutor): Promise<Role[]> => {
+    const { query, values } = queryBuilder('roles', role);
     const exec = client || this.pool;
-    const r = await exec.query("SELECT * FROM roles WHERE name != 'owner' AND deleted = false");
+    const r = await exec.query(query, values);
     return r.rows;
+  };
+
+  create = async (
+    role: Pick<Role, 'name' | 'tenant_id'>,
+    client?: QueryExecutor,
+  ): Promise<Role> => {
+    const exec = client || this.pool;
+
+    const { query, values } = insertQueryBuilder('roles', {
+      name: role.name,
+      tenant_id: role.tenant_id,
+    });
+
+    const r = await exec.query(query, values);
+    return r.rows[0];
   };
 }
 

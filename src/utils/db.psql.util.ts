@@ -1,4 +1,8 @@
-export const queryBuilder = (table: string, filters: object, select: string[] = ['*']) => {
+export function queryBuilder(table: string, filters: object | null, select: string[] = ['*']) {
+  if (filters === undefined || filters === null || Object.keys(filters).length === 0) {
+    const query = `SELECT ${select.join(', ')} FROM ${table}`;
+    return { query, values: [] };
+  }
   const filteredData = Object.fromEntries(
     Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null),
   );
@@ -10,9 +14,9 @@ export const queryBuilder = (table: string, filters: object, select: string[] = 
   const query = `SELECT ${select.join(', ')} FROM ${table} WHERE ${fields}`;
 
   return { query, values };
-};
+}
 
-export const insertQueryBuilder = (table: string, data: Partial<any>) => {
+export function insertQueryBuilder(table: string, data: Partial<any>) {
   const filteredData = Object.fromEntries(
     Object.entries(data).filter(([_, v]) => v !== undefined && v !== null),
   );
@@ -22,9 +26,9 @@ export const insertQueryBuilder = (table: string, data: Partial<any>) => {
   const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${values.map((_, index) => `$${index + 1}`).join(', ')}) RETURNING *`;
 
   return { query, values };
-};
+}
 
-export const updateQueryBuilder = (table: string, id: string, data: Partial<any>) => {
+export function updateQueryBuilder(table: string, id: string, data: Partial<any>) {
   const filteredData = Object.fromEntries(
     Object.entries(data).filter(([_, v]) => v !== undefined && v !== null),
   );
@@ -35,4 +39,4 @@ export const updateQueryBuilder = (table: string, id: string, data: Partial<any>
   const query = `UPDATE ${table} SET ${fields} WHERE id = $${keys.length + 1} RETURNING *`;
 
   return { query, values: [...values, id] };
-};
+}

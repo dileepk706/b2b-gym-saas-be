@@ -9,15 +9,31 @@ class RoleService implements IRoleService {
   constructor(@inject('IRoleRepository') private readonly roleRepository: IRoleRepository) {}
 
   findOneByName = async (name: string, client?: QueryExecutor): Promise<Role> => {
-    return this.roleRepository.findOneByName(name, client);
+    return this.roleRepository.findOne({ name }, client);
   };
 
   findOneById = async (id: string, client?: QueryExecutor): Promise<Role> => {
     return this.roleRepository.findOneById(id, client);
   };
 
-  getAllStaffRoles = async (client?: QueryExecutor): Promise<Role[]> => {
-    return this.roleRepository.findAllStaffRoles(client);
+  findAll = async (tenantId: string, client?: QueryExecutor): Promise<Role[]> => {
+    return this.roleRepository.findAll({ tenant_id: tenantId }, client);
+  };
+
+  replicateRoles = async (tenantId: string, client?: QueryExecutor): Promise<Role[]> => {
+    const existingRoles = await this.roleRepository.findAll(null, client);
+
+    for (const role of existingRoles) {
+      await this.roleRepository.create(
+        {
+          name: role.name,
+          tenant_id: tenantId,
+        },
+        client,
+      );
+    }
+
+    return await this.roleRepository.findAll({ tenant_id: tenantId }, client);
   };
 }
 

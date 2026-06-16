@@ -9,7 +9,7 @@ class RoleController implements IRoleController {
   constructor(@inject('IRoleService') private readonly roleService: IRoleService) {}
 
   getAllStaffRoles = async (req: Request, res: Response) => {
-    const roles = await this.roleService.getAllStaffRoles();
+    const roles = await this.roleService.findAll();
     return sendSuccess(res, roles, 'Staff roles fetched successfully', 200);
   };
 }

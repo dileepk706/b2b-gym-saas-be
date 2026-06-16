@@ -9,6 +9,7 @@ import DbSharedService from '@/shared/services/db.shared.service.js';
 import { ApiError } from '@/shared/middleware/error_handler.js';
 import httpStatus from 'http-status';
 import { CreateWorkspaceDto } from '@/module/onboarding/application/dtos/create-workspace.dto.js';
+import { IRolePermissionService } from '@/module/role/domain/interfaces/role-permission.service.interface.js';
 
 @injectable()
 class OnboardingFcade implements IOnboardingFcade {
@@ -18,6 +19,7 @@ class OnboardingFcade implements IOnboardingFcade {
     @inject('IUserService') private userService: IUserService,
     @inject('IStaffService') private staffService: IStaffService,
     @inject('IRoleService') private roleService: IRoleService,
+    @inject('IRolePermissionService') private rolePermissionService: IRolePermissionService,
     @inject('DbSharedService') private dbSharedService: DbSharedService,
   ) {}
 
@@ -55,11 +57,15 @@ class OnboardingFcade implements IOnboardingFcade {
         client,
       );
 
+      await this.roleService.replicateRoles(tenant.id, client);
+      await this.rolePermissionService.replicateRolesPermission(tenant.id, client);
+
       const user = await this.userService.updateById(
         userId,
         {
           tenant_id: tenant.id,
           gym_id: gym.id,
+          user_type: 'owner',
         },
         client,
       );
