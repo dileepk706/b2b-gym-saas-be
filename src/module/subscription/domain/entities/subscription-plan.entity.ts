@@ -15,4 +15,5 @@ export default interface SubscriptionPlan {
   price: string;
   features: SubscriptionPlanFeature[];
   limits: SubscriptionPlanLimit[];
+  expires_in: number | null;
 }
