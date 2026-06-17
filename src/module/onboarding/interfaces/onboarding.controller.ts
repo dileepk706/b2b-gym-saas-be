@@ -20,10 +20,11 @@ class OnboardingController implements IOnboardingController {
     if (tenant_id || gym_id)
       throw new ApiError('You are already onboarded', httpStatus.BAD_REQUEST);
 
-    const { tenant, gym, user, staff } = await this.onboardingFcade.createWorkspaceAndOnboardOwner(
-      req.body,
-      req.user?.user_id as string,
-    );
+    const { tenant, gym, user, staff, roles, rolePermissions } =
+      await this.onboardingFcade.createWorkspaceAndOnboardOwner(
+        req.body,
+        req.user?.user_id as string,
+      );
 
     const payLoad = {
       user_id: user.id,
@@ -42,7 +43,7 @@ class OnboardingController implements IOnboardingController {
 
     return sendSuccess(
       res,
-      { accessToken, refreshToken, tenant, gym, staff, user },
+      { accessToken, refreshToken, tenant, gym, staff, user, roles, rolePermissions },
       'Onboarded successfully',
       200,
     );

@@ -13,8 +13,12 @@ class RolePermissionRepository implements IRolePermissionRepository {
     rolePermission: Partial<RolePermission> | null,
     client?: QueryExecutor,
   ): Promise<RolePermission[]> => {
-    const { query, values } = queryBuilder('role_permissions', rolePermission);
     const exec = client || this.pool;
+    if (rolePermission && 'tenant_id' in rolePermission && rolePermission.tenant_id === null) {
+      const r = await exec.query('SELECT * FROM role_permissions WHERE tenant_id IS NULL');
+      return r.rows;
+    }
+    const { query, values } = queryBuilder('role_permissions', rolePermission);
     const r = await exec.query(query, values);
     return r.rows;
   };

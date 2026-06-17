@@ -11,7 +11,7 @@ class UserController implements IUserController {
   constructor(@inject('IUserService') private readonly userService: IUserService) {}
 
   createUser = async (req: Request, res: Response) => {
-    const result = await this.userService.create(req.body);
+    const result = await this.userService.create({ ...req.body, user_type: 'owner' });
     return sendSuccess(res, { user: result }, 'User created successfully', 201);
   };
 

@@ -57,8 +57,11 @@ class OnboardingFcade implements IOnboardingFcade {
         client,
       );
 
-      await this.roleService.replicateRoles(tenant.id, client);
-      await this.rolePermissionService.replicateRolesPermission(tenant.id, client);
+      const roles = await this.roleService.replicateRoles(tenant.id, client);
+      const rolePermissions = await this.rolePermissionService.replicateRolesPermission(
+        tenant.id,
+        client,
+      );
 
       const user = await this.userService.updateById(
         userId,
@@ -70,7 +73,7 @@ class OnboardingFcade implements IOnboardingFcade {
         client,
       );
 
-      const role = await this.roleService.findOneByName('owner', client);
+      const role = await this.roleService.findOneByName('owner', tenant.id, client);
 
       const staff = await this.staffService.create(
         {
@@ -86,7 +89,7 @@ class OnboardingFcade implements IOnboardingFcade {
 
       await client.query('COMMIT');
 
-      return { tenant, gym, user, staff };
+      return { tenant, gym, user, staff, roles, rolePermissions };
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

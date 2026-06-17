@@ -4,7 +4,7 @@
 export const shorthands = undefined;
 
 const PLAN_IDS = {
-  basic: '11111111-1111-4111-8111-111111111111',
+  free: '11111111-1111-4111-8111-111111111111',
   pro: '22222222-2222-4222-8222-222222222222',
   enterprise: '33333333-3333-4333-8333-333333333333',
 };
@@ -27,10 +27,10 @@ const FEATURE_IDS = {
  */
 export const up = (pgm) => {
   pgm.sql(`
-    INSERT INTO subscription_plans (id, name, price) VALUES
-    ('${PLAN_IDS.basic}', 'Basic', 79),
-    ('${PLAN_IDS.pro}', 'Pro', 599),
-    ('${PLAN_IDS.enterprise}', 'Enterprise', 1999)
+    INSERT INTO subscription_plans (id, name, price,expires_in) VALUES
+    ('${PLAN_IDS.free}', 'free', 0,30),
+    ('${PLAN_IDS.pro}', 'pro', 2499,30),
+    ('${PLAN_IDS.enterprise}', 'enterprise', 7999,30)
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       price = EXCLUDED.price;
@@ -54,9 +54,9 @@ export const up = (pgm) => {
 
   pgm.sql(`
     INSERT INTO plan_features (plan_id, feature_id) VALUES
-    ('${PLAN_IDS.basic}', '${FEATURE_IDS.memberManagement}'),
-    ('${PLAN_IDS.basic}', '${FEATURE_IDS.staffManagement}'),
-    ('${PLAN_IDS.basic}', '${FEATURE_IDS.basicAnalytics}'),
+    ('${PLAN_IDS.free}', '${FEATURE_IDS.memberManagement}'),
+    ('${PLAN_IDS.free}', '${FEATURE_IDS.staffManagement}'),
+    ('${PLAN_IDS.free}', '${FEATURE_IDS.basicAnalytics}'),
     ('${PLAN_IDS.pro}', '${FEATURE_IDS.memberManagement}'),
     ('${PLAN_IDS.pro}', '${FEATURE_IDS.staffManagement}'),
     ('${PLAN_IDS.pro}', '${FEATURE_IDS.basicAnalytics}'),
@@ -77,9 +77,9 @@ export const up = (pgm) => {
 
   pgm.sql(`
     INSERT INTO plan_limits (plan_id, key, value) VALUES
-    ('${PLAN_IDS.basic}', 'max_members', 10),
-    ('${PLAN_IDS.basic}', 'max_staffs', 5),
-    ('${PLAN_IDS.basic}', 'max_branches', 1),
+    ('${PLAN_IDS.free}', 'max_members', 10),
+    ('${PLAN_IDS.free}', 'max_staffs', 5),
+    ('${PLAN_IDS.free}', 'max_branches', 1),
     ('${PLAN_IDS.pro}', 'max_members', 15),
     ('${PLAN_IDS.pro}', 'max_staffs', 10),
     ('${PLAN_IDS.pro}', 'max_branches', 5),
@@ -96,7 +96,7 @@ export const up = (pgm) => {
 export const down = (pgm) => {
   pgm.sql(`
     DELETE FROM plan_limits WHERE plan_id IN (
-      '${PLAN_IDS.basic}',
+      '${PLAN_IDS.free}',
       '${PLAN_IDS.pro}',
       '${PLAN_IDS.enterprise}'
     );
@@ -104,7 +104,7 @@ export const down = (pgm) => {
 
   pgm.sql(`
     DELETE FROM plan_features WHERE plan_id IN (
-      '${PLAN_IDS.basic}',
+      '${PLAN_IDS.free}',
       '${PLAN_IDS.pro}',
       '${PLAN_IDS.enterprise}'
     );
@@ -126,7 +126,7 @@ export const down = (pgm) => {
 
   pgm.sql(`
     DELETE FROM subscription_plans WHERE id IN (
-      '${PLAN_IDS.basic}',
+      '${PLAN_IDS.free}',
       '${PLAN_IDS.pro}',
       '${PLAN_IDS.enterprise}'
     );

@@ -23,8 +23,12 @@ class RoleRepository implements IRoleRepository {
   };
 
   findAll = async (role: Partial<Role> | null, client?: QueryExecutor): Promise<Role[]> => {
-    const { query, values } = queryBuilder('roles', role);
     const exec = client || this.pool;
+    if (role && 'tenant_id' in role && role.tenant_id === null) {
+      const r = await exec.query('SELECT * FROM roles WHERE tenant_id IS NULL');
+      return r.rows;
+    }
+    const { query, values } = queryBuilder('roles', role);
     const r = await exec.query(query, values);
     return r.rows;
   };

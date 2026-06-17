@@ -12,7 +12,14 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       SELECT
         sp.id,
         sp.name,
+        sp.description,
         sp.price,
+        sp.currency,
+        sp.billing_interval,
+        sp.trial_days,
+        sp.is_active,
+        sp.sort_order,
+        sp.expires_in,
         COALESCE(
           json_agg(
             DISTINCT jsonb_build_object(
@@ -37,13 +44,16 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       LEFT JOIN features f ON f.id = pf.feature_id
       LEFT JOIN plan_limits pl ON pl.plan_id = sp.id
       ${whereClause}
-      GROUP BY sp.id, sp.name, sp.price
-      ORDER BY sp.price ASC
+      GROUP BY sp.id, sp.name, sp.description, sp.price, sp.currency,
+               sp.billing_interval, sp.trial_days, sp.is_active, sp.sort_order, sp.expires_in
+      ORDER BY sp.sort_order ASC, sp.price ASC
     `;
   }
 
   findAllWithDetails = async (): Promise<SubscriptionPlan[]> => {
-    const { rows } = await this.pool.query<SubscriptionPlan>(this.buildPlanQuery());
+    const { rows } = await this.pool.query<SubscriptionPlan>(
+      this.buildPlanQuery('WHERE sp.is_active = true'),
+    );
     return rows;
   };
 
@@ -52,7 +62,7 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       this.buildPlanQuery('WHERE sp.id = $1'),
       [id],
     );
-    return rows[0] || null;
+    return rows[0] ?? null;
   };
 }
 

@@ -12,8 +12,14 @@ export interface SubscriptionPlanLimit {
 export default interface SubscriptionPlan {
   id: string;
   name: string;
+  description: string | null;
   price: string;
+  currency: string;
+  billing_interval: 'month' | 'year';
+  trial_days: number;
+  is_active: boolean;
+  sort_order: number;
+  expires_in: number | null;
   features: SubscriptionPlanFeature[];
   limits: SubscriptionPlanLimit[];
-  expires_in: number | null;
 }

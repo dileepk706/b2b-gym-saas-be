@@ -21,20 +21,9 @@ class StaffController implements IStaffController {
       tenant_id: req.user.tenant_id,
     };
 
-    let result;
-    if (req.body.send_invitation && req.body.email) {
-      z.email({ message: 'Invalid email address' }).parse(req.body.email);
-      result = await this.staffFcade.createStaffUser(s);
-    } else {
-      result = await this.staffFcade.createStaffUser(s);
-
-      // result = await this.staffService.create(s);
-    }
-
-    // if staff deletes permisions also delated
-    // if any permision deleted , delete the record from staff table
-
-    return sendSuccess(res, { result }, 'Staff created successfully', 201);
+    // z.email({ message: 'Invalid email address' }).parse(req.body.email);
+    const result = await this.staffFcade.createStaffUser(s);
+    return sendSuccess(res, result, 'Staff created successfully', 201);
   };
 }
 

@@ -21,6 +21,9 @@ export const up = (pgm) => {
     price: {
       type: 'numeric',
     },
+    expires_in: {
+      type: 'integer',
+    },
   });
 
   pgm.createTable('features', {
