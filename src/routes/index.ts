@@ -16,6 +16,7 @@ import { authorizeAdmin } from '@/shared/middleware/admin.middleware.js';
 import { gymGlobalRouteConfig } from '@/module/gym/interfaces/routes/gym-global.routes.js';
 import { subscriptionPlanRouteConfig } from '@/module/subscription/interfaces/route/subscription-plan.routes.js';
 import { subscriptionRouteConfig } from '@/module/subscription/interfaces/route/subscription.routes.js';
+import { tenantRouterConfig } from '@/module/tenant/interface/tenant.routes.js';
 
 const moduleRoutes: ModuleRouteConfig[] = [
   subscriptionPlanRouteConfig,
@@ -29,6 +30,7 @@ const moduleRoutes: ModuleRouteConfig[] = [
   permissionRouteConfig,
   roleRouteConfig,
   userAuthRouteConfig,
+  tenantRouterConfig,
 ];
 
 const groupMiddleware: RouteGroupMiddleware = {

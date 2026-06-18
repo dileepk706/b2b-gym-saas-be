@@ -31,6 +31,10 @@ class GymService implements IGymService {
   async find(tenant_id: string, user_id: string): Promise<Gym[]> {
     return await this.gymRepositoryImpl.find(tenant_id, user_id);
   }
+
+  async findByTenantAndUserId(tenant_id: string, user_id: string): Promise<Gym[]> {
+    return await this.gymRepositoryImpl.findByTenantAndUserId(tenant_id, user_id);
+  }
 }
 
 export default GymService;

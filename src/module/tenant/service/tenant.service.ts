@@ -19,6 +19,10 @@ class TenantService implements ITenantService {
   ): Promise<Tenant | null> => {
     return await this.tenantRepo.updateById(id, tenant, client);
   };
+
+  getOneById = async (id: string, client?: QueryExecutor) => {
+    return await this.tenantRepo.findOneById(id, client);
+  };
 }
 
 export default TenantService;

@@ -51,13 +51,20 @@ class GymRepositoryImpl implements IGymRepositoryImpl {
   };
 
   find = async (tenant_id: string, user_id: string): Promise<Gym[]> => {
+    const query = `SELECT * FROM gyms WHERE tenant_id = $1 ORDER BY name ASC;`;
+
+    const result = await this.pool.query(query, [tenant_id]);
+    return result.rows;
+  };
+
+  findByTenantAndUserId = async (tenant_id: string, user_id: string): Promise<Gym[]> => {
     const query = `SELECT DISTINCT
-  g.*
-FROM gyms g
-INNER JOIN staff s ON s.gym_id = g.id
-WHERE s.user_id   = $1
-  AND s.tenant_id = $2
-ORDER BY g.name ASC;`;
+      g.*
+    FROM gyms g
+    INNER JOIN staff s ON s.gym_id = g.id
+    WHERE s.user_id   = $1
+      AND s.tenant_id = $2
+    ORDER BY g.name ASC;`;
 
     const result = await this.pool.query(query, [user_id, tenant_id]);
     return result.rows;

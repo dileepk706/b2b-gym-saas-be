@@ -32,6 +32,12 @@ class TenantRepositoryImpl implements ITenantRepository {
 
     return result.rows[0];
   };
+
+  findOneById = async (id: string, client?: QueryExecutor) => {
+    const exec = client || this.pool;
+    const result = await exec.query('SELECT * FROM tenants WHERE id=$1', [id]);
+    return result.rows[0];
+  };
 }
 
 export default TenantRepositoryImpl;

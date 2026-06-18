@@ -56,6 +56,25 @@ gymGlobalRouter.get('/:id', (req, res) => getController().findById(req, res));
  */
 gymGlobalRouter.get('/', asyncHandler(getController().getGyms));
 
+/**
+ * @swagger
+ * /api/gyms/tenant/{tenant_id}/user/{user_id}:
+ *   get:
+ *     summary: Retrieve a list of gyms
+ *     tags: [Gym]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of gyms
+ *       401:
+ *         description: Unauthorized
+ */
+gymGlobalRouter.get(
+  '/tenant/:tenant_id/user/:user_id',
+  asyncHandler(getController().findByTenantAndUserId),
+);
+
 export const gymGlobalRouteConfig: ModuleRouteConfig = {
   basePath: '/gyms/global',
   router: gymGlobalRouter,
