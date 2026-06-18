@@ -8,8 +8,15 @@ import { QueryExecutor } from '@/shared/types/database.js';
 class RoleService implements IRoleService {
   constructor(@inject('IRoleRepository') private readonly roleRepository: IRoleRepository) {}
 
-  findOneByName = async (name: string, tenantId?: string, client?: QueryExecutor): Promise<Role> => {
-    return this.roleRepository.findOne({ name, ...(tenantId ? { tenant_id: tenantId } : {}) }, client);
+  findOneByName = async (
+    name: string,
+    tenantId?: string,
+    client?: QueryExecutor,
+  ): Promise<Role> => {
+    return this.roleRepository.findOne(
+      { name, ...(tenantId ? { tenant_id: tenantId } : {}) },
+      client,
+    );
   };
 
   findOneById = async (id: string, client?: QueryExecutor): Promise<Role> => {

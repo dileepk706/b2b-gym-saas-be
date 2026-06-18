@@ -33,7 +33,10 @@ class RolePermissionService implements IRolePermissionService {
       }
     }
 
-    const existingRolePermissions = await this.rolePermissionRepository.findAll({ tenant_id: null } as any, client);
+    const existingRolePermissions = await this.rolePermissionRepository.findAll(
+      { tenant_id: null } as any,
+      client,
+    );
 
     for (const rp of existingRolePermissions) {
       const tenantRoleId = roleIdMap.get(rp.role_id);

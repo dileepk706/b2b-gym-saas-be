@@ -22,6 +22,23 @@ class UserController implements IUserController {
     if (!result) throw new ApiError('User not found', httpStatus.NOT_FOUND);
     return sendSuccess(res, { user: result }, 'User fetched successfully', 200);
   };
+
+  updateSelf = async (req: Request, res: Response) => {
+    let cu = await this.userService.findOne({ id: req.user?.user_id as string });
+    if (!cu) throw new ApiError('User not found', httpStatus.NOT_FOUND);
+    cu = await this.userService.validate({
+      email: cu.email,
+      password: req.body.currentPassword as string,
+    });
+    delete req.body.currentPassword;
+    const result = await this.userService.updateById(req.user?.user_id as string, req.body);
+    return sendSuccess(res, result, 'User updated successfully', 200);
+  };
+
+  updateById = async (req: Request, res: Response) => {
+    const result = await this.userService.updateById(req.params.id as string, req.body);
+    return sendSuccess(res, result, 'User updated successfully', 200);
+  };
 }
 
 export default UserController;

@@ -87,9 +87,7 @@ class SubscriptionJobService {
               `[RenewalJob] Renewed subscription ${subscription.id}, invoice status: ${invoice.status}`,
             );
           } else {
-            logger.info(
-              `[RenewalJob] Renewed free subscription ${subscription.id} — no invoice`,
-            );
+            logger.info(`[RenewalJob] Renewed free subscription ${subscription.id} — no invoice`);
           }
         } catch (err) {
           logger.error(`[RenewalJob] Failed for subscription ${subscription.id}:`, err);
@@ -214,11 +212,7 @@ class SubscriptionJobService {
 
             if (attemptCount >= MAX_PAYMENT_ATTEMPTS) {
               // Exhausted retries — suspend subscription
-              await this.repo.updateSubscription(
-                subscription.id,
-                { status: 'suspended' },
-                client,
-              );
+              await this.repo.updateSubscription(subscription.id, { status: 'suspended' }, client);
               await this.repo.updateInvoice(invoice.id, { status: 'uncollectible' }, client);
               logger.warn(
                 `[PaymentRetryJob] Subscription ${subscription.id} suspended after ${attemptCount} attempts`,
@@ -250,11 +244,13 @@ class SubscriptionJobService {
             );
 
             if (result.status === 'succeeded') {
-              await this.repo.updateInvoice(invoice.id, { status: 'paid', paid_at: new Date() }, client);
-              await this.repo.updateSubscription(subscription.id, { status: 'active' }, client);
-              logger.info(
-                `[PaymentRetryJob] Retry succeeded for subscription ${subscription.id}`,
+              await this.repo.updateInvoice(
+                invoice.id,
+                { status: 'paid', paid_at: new Date() },
+                client,
               );
+              await this.repo.updateSubscription(subscription.id, { status: 'active' }, client);
+              logger.info(`[PaymentRetryJob] Retry succeeded for subscription ${subscription.id}`);
             } else {
               logger.warn(
                 `[PaymentRetryJob] Retry attempt ${attemptCount + 1} failed for subscription ${subscription.id}`,
@@ -298,14 +294,9 @@ class SubscriptionJobService {
             client,
           );
 
-          logger.info(
-            `[ExpiredSubscriptionJob] Expired subscription ${subscription.id}`,
-          );
+          logger.info(`[ExpiredSubscriptionJob] Expired subscription ${subscription.id}`);
         } catch (err) {
-          logger.error(
-            `[ExpiredSubscriptionJob] Failed for subscription ${subscription.id}:`,
-            err,
-          );
+          logger.error(`[ExpiredSubscriptionJob] Failed for subscription ${subscription.id}:`, err);
         }
       }
 

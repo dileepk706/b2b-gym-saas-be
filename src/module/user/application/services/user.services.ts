@@ -35,7 +35,26 @@ class UserService implements IUserService {
   };
 
   updateById = async (id: string, user: UserPartial, client?: QueryExecutor): Promise<User> => {
-    const res = await this.userRepository.updateById(id, user, client);
+    if (Object.keys(user).length === 0) {
+      const existingUser = await this.userRepository.findOne({ id });
+      if (!existingUser) throw new ApiError('User not found', httpStatus.NOT_FOUND);
+      return existingUser;
+    }
+
+    if (user.email) {
+      const existingUser = await this.userRepository.findOne({ email: user.email });
+      if (existingUser && existingUser.id !== id) {
+        throw new ApiError('User with same email already exists', httpStatus.CONFLICT);
+      }
+    }
+
+    const updates = { ...user };
+    if (updates.password) {
+      updates.password = await hashPassword(updates.password);
+    }
+
+    const res = await this.userRepository.updateById(id, updates, client);
+    if (!res) throw new ApiError('User not found', httpStatus.NOT_FOUND);
     return res;
   };
 
