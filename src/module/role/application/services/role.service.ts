@@ -23,6 +23,14 @@ class RoleService implements IRoleService {
     return this.roleRepository.findOneById(id, client);
   };
 
+  findOneByIdAndTenant = async (
+    id: string,
+    tenant_id: string,
+    client?: QueryExecutor,
+  ): Promise<Role> => {
+    return this.roleRepository.findOneByIdAndTenant(id, tenant_id, client);
+  };
+
   findAll = async (tenantId: string, client?: QueryExecutor): Promise<Role[]> => {
     return this.roleRepository.findAll({ tenant_id: tenantId }, client);
   };

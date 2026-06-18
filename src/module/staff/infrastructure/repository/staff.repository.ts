@@ -1,43 +1,97 @@
-import { StaffDto } from '@/module/staff/application/dtos/create-staff-dto.js';
 import Staff from '@/module/staff/domain/entities/staff.entity.js';
-import IStaffRepository from '@/module/staff/domain/interfaces/staff.repository.interface.js';
+import IStaffRepository, {
+  StaffSearchFilters,
+} from '@/module/staff/domain/interfaces/staff.repository.interface.js';
 import { Pool } from 'pg';
 import { inject, injectable } from 'tsyringe';
 import { QueryExecutor } from '@/shared/types/database.js';
+import { insertQueryBuilder, updateQueryBuilder, queryBuilder } from '@/utils/db.psql.util.js';
 
 @injectable()
 class StaffRepository implements IStaffRepository {
   constructor(@inject(Pool) private readonly pool: Pool) {}
 
-  create = async (staff: StaffDto, client?: QueryExecutor): Promise<Staff> => {
+  create = async (staff: Partial<Staff>, client?: QueryExecutor): Promise<Staff> => {
     const exec = client || this.pool;
-    const result = await exec.query(
-      'INSERT INTO staff(name,email,phone,tenant_id,gym_id ,user_id,role_id)  VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [
-        staff.name,
-        staff.email,
-        staff.phone,
-        staff.tenant_id,
-        staff.gym_id,
-        staff.user_id,
-        staff.role_id,
-      ],
-    );
-
+    const { query, values } = insertQueryBuilder('staff', staff);
+    const result = await exec.query(query, values);
     return result.rows[0];
   };
 
-  findOne = async (staff: Partial<Staff>): Promise<Staff | null> => {
-    const keys = Object.keys(staff);
-    if (keys.length === 0) return null;
+  findOne = async (filters: Partial<Staff>, client?: QueryExecutor): Promise<Staff | null> => {
+    const exec = client || this.pool;
+    const { query, values } = queryBuilder('staff', filters);
+    const result = await exec.query(query, values);
+    return result.rows[0] || null;
+  };
 
-    const values = Object.values(staff);
-    const fields = keys.map((key, index) => `"${key}" = $${index + 1}`).join(' AND ');
+  findById = async (id: string, client?: QueryExecutor): Promise<Staff | null> => {
+    const exec = client || this.pool;
+    const result = await exec.query(
+      `SELECT s.*, r.name AS role_name
+       FROM staff s
+       LEFT JOIN roles r ON s.role_id = r.id
+       WHERE s.id = $1`,
+      [id],
+    );
+    return result.rows[0] || null;
+  };
 
-    const query = `SELECT * FROM staff WHERE ${fields}`;
+  findAll = async (filters: StaffSearchFilters, client?: QueryExecutor): Promise<Staff[]> => {
+    const exec = client || this.pool;
+    const conditions: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
 
-    const result = await this.pool.query(query, values);
+    if (filters.gym_id) {
+      conditions.push(`s.gym_id = $${paramIndex++}`);
+      values.push(filters.gym_id);
+    }
+    if (filters.tenant_id) {
+      conditions.push(`s.tenant_id = $${paramIndex++}`);
+      values.push(filters.tenant_id);
+    }
+    if (filters.role_id) {
+      conditions.push(`s.role_id = $${paramIndex++}`);
+      values.push(filters.role_id);
+    }
+    if (filters.name) {
+      conditions.push(`s.name ILIKE $${paramIndex++}`);
+      values.push(`%${filters.name}%`);
+    }
+    if (filters.email) {
+      conditions.push(`s.email ILIKE $${paramIndex++}`);
+      values.push(`%${filters.email}%`);
+    }
 
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const query = `
+      SELECT s.*, r.name AS role_name
+      FROM staff s
+      LEFT JOIN roles r ON s.role_id = r.id
+      ${whereClause}
+      ORDER BY s.created_at DESC
+    `;
+
+    const result = await exec.query(query, values);
+    return result.rows;
+  };
+
+  updateById = async (
+    id: string,
+    data: Partial<Staff>,
+    client?: QueryExecutor,
+  ): Promise<Staff | null> => {
+    const exec = client || this.pool;
+    const { query, values } = updateQueryBuilder('staff', id, data);
+    const result = await exec.query(query, values);
+    return result.rows[0] || null;
+  };
+
+  deleteById = async (id: string, client?: QueryExecutor): Promise<Staff | null> => {
+    const exec = client || this.pool;
+    const result = await exec.query(`DELETE FROM staff WHERE id = $1 RETURNING *`, [id]);
     return result.rows[0] || null;
   };
 }

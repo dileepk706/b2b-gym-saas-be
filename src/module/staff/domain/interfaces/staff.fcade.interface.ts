@@ -1,8 +1,14 @@
-import { StaffDto } from '@/module/staff/application/dtos/create-staff-dto.js';
+import Staff from '@/module/staff/domain/entities/staff.entity.js';
 
 interface IStaffFcade {
-  create(staff: StaffDto): Promise<any>;
-  createStaffUser(staff: StaffDto): Promise<any>;
+  createStaffUser(staff: Partial<Staff> & { password?: string }): Promise<any>;
+  updateStaffUser(
+    staffId: string,
+    gymId: string,
+    tenantId: string,
+    data: Partial<Staff> & { password?: string },
+  ): Promise<any>;
+  deleteStaffUser(staffId: string, gymId: string): Promise<any>;
 }
 
 export default IStaffFcade;

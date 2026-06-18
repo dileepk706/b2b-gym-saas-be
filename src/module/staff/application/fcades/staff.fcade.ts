@@ -1,64 +1,129 @@
 import { inject, injectable } from 'tsyringe';
 import IStaffService from '@/module/staff/domain/interfaces/staff.service.interface.js';
-import { StaffDto } from '@/module/staff/application/dtos/create-staff-dto.js';
 import IStaffFcade from '@/module/staff/domain/interfaces/staff.fcade.interface.js';
 import { ApiError } from '@/shared/middleware/error_handler.js';
 import httpStatus from 'http-status';
-import IStaffPermissionService from '@/module/permissions/domain/interfaces/staff-permission.service.interface.js';
 import { IRoleService } from '@/module/role/domain/interfaces/role.service.interface.js';
 import IUserService from '@/module/user/domain/interfaces/user.services.interface.js';
+import DbSharedService from '@/shared/services/db.shared.service.js';
+import Staff from '@/module/staff/domain/entities/staff.entity.js';
 
 @injectable()
 class StaffFcade implements IStaffFcade {
   constructor(
     @inject('IStaffService') private readonly staffService: IStaffService,
-    @inject('IStaffPermissionService')
-    private readonly staffPermissionService: IStaffPermissionService,
     @inject('IRoleService') private readonly roleService: IRoleService,
     @inject('IUserService') private readonly userService: IUserService,
+    @inject('DbSharedService') private readonly dbSharedService: DbSharedService,
   ) {}
 
-  create = async (staff: StaffDto & { permissions: string[] }): Promise<any> => {
-    // remove user_id fk frim rrefresh token
-    const role = await this.roleService.findOneById(staff.role_id);
-    if (!role) throw new ApiError('Role not found', httpStatus.NOT_FOUND);
+  createStaffUser = async (staff: Partial<Staff> & { password?: string }): Promise<any> => {
+    const { email, name, phone, role_id, check_in_code, gym_id, tenant_id, password } =
+      staff as any;
 
-    const newStaff = await this.staffService.create(staff);
+    // Validate role belongs to this tenant
+    const role = await this.roleService.findOneByIdAndTenant(role_id, tenant_id);
+    if (!role) throw new ApiError('Role does not belong to this tenant', httpStatus.FORBIDDEN);
 
-    const staffPermissions = await this.staffPermissionService.getAllStaffPermissions({
-      staff_id: newStaff.id,
-    });
+    const client = await this.dbSharedService.getClient();
+    try {
+      await client.query('BEGIN');
 
-    return { ...newStaff, permissions: staffPermissions };
-  };
+      // Find or create user — only one user with email per tenant
+      let user = await this.userService.findOne({ email, tenant_id });
+      if (user)
+        throw new ApiError(
+          'User email already registered under another tenant',
+          httpStatus.CONFLICT,
+        );
 
-  createStaffUser = async (staff: StaffDto): Promise<any> => {
-    let cu = await this.userService.findOne({ email: staff.email, tenant_id: staff.tenant_id });
-    if (!cu) {
-      cu = await this.userService.create({
-        email: staff.email,
-        name: staff.name,
-        tenant_id: staff.tenant_id,
-        gym_id: staff.gym_id,
-        user_type: 'staff',
-        password: staff.check_in_code?.toString() || 'defaultpassword',
-      });
-    }
-
-    let cs = await this.staffService.findOne({
-      user_id: cu.id,
-      tenant_id: staff.tenant_id,
-      gym_id: staff.gym_id,
-    });
-
-    if (cs)
-      throw new ApiError(
-        'Staff user with same email already exists in this gym',
-        httpStatus.CONFLICT,
+      user = await this.userService.create(
+        {
+          email,
+          name,
+          tenant_id,
+          gym_id,
+          user_type: 'staff',
+          password: password || check_in_code?.toString() || 'changeme123',
+        },
+        client,
       );
 
-    cs = await this.staffService.create({ ...staff, user_id: cu.id });
-    return { staff: cs, user: cu };
+      // Only one staff with user_id in one gym
+      const existingStaff = await this.staffService.findOne({ user_id: user.id, gym_id });
+      if (existingStaff) {
+        throw new ApiError('This user is already a staff member in this gym', httpStatus.CONFLICT);
+      }
+
+      const newStaff = await this.staffService.create(
+        {
+          name: name || user.name,
+          email: email || user.email,
+          phone,
+          role_id,
+          check_in_code,
+          gym_id,
+          tenant_id,
+          user_id: user.id,
+        },
+        client,
+      );
+
+      await client.query('COMMIT');
+      return { staff: newStaff, user };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  };
+
+  updateStaffUser = async (
+    staffId: string,
+    gymId: string,
+    tenantId: string,
+    data: Partial<Staff> & { password?: string },
+  ): Promise<any> => {
+    const { role_id, email, name, password, phone, check_in_code } = data as any;
+
+    if (role_id) {
+      const role = await this.roleService.findOneByIdAndTenant(role_id, tenantId);
+      if (!role) throw new ApiError('Role not found', httpStatus.NOT_FOUND);
+    }
+
+    const client = await this.dbSharedService.getClient();
+    try {
+      await client.query('BEGIN');
+
+      // Build staff update payload (exclude password)
+      const staffUpdateData: Partial<Staff> = {};
+      if (name !== undefined) staffUpdateData.name = name;
+      if (email !== undefined) staffUpdateData.email = email;
+      if (phone !== undefined) staffUpdateData.phone = phone;
+      if (role_id !== undefined) staffUpdateData.role_id = role_id;
+      if (check_in_code !== undefined) staffUpdateData.check_in_code = check_in_code;
+
+      const updatedStaff = await this.staffService.updateById(staffId, gymId, staffUpdateData);
+
+      await client.query('COMMIT');
+      return updatedStaff;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  };
+
+  /**
+   * deleteStaffUser:
+   * Deletes the staff record from the gym.
+   * The user record is retained (user may belong to other gyms / be an owner).
+   */
+  deleteStaffUser = async (staffId: string, gymId: string): Promise<any> => {
+    const deleted = await this.staffService.deleteById(staffId, gymId);
+    return deleted;
   };
 }
 
