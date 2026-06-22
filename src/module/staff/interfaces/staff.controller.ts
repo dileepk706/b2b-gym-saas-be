@@ -48,7 +48,7 @@ class StaffController implements IStaffController {
     });
     return sendSuccess(
       res,
-      { staff: staffList, total: staffList.length },
+      { staffs: staffList, total: staffList.length },
       'Staff fetched successfully',
       200,
     );

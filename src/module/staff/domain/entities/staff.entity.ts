@@ -15,5 +15,3 @@ type Staff = {
 export default Staff;
 
 export type StaffPartial = Partial<Staff>;
-
-//

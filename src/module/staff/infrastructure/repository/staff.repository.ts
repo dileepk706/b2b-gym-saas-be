@@ -67,7 +67,8 @@ class StaffRepository implements IStaffRepository {
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const query = `
-      SELECT s.*, r.name AS role_name
+      SELECT  s.*, 
+      row_to_json(r.*) AS "roleData"
       FROM staff s
       LEFT JOIN roles r ON s.role_id = r.id
       ${whereClause}

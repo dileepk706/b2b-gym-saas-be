@@ -11,7 +11,7 @@ const tenantMiddleware = (req: Request, res: Response, next: NextFunction): void
 export default tenantMiddleware;
 
 export const gymMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const gymId = req.headers.gym_id || req.query.gym_id;
+  const gymId = req.user?.gym_id || req.headers.gym_id || req.query.gym_id;
   if (!gymId) throw new ApiError('Gym ID is required.', httpStatus.NOT_FOUND);
   next();
 };
