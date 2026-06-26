@@ -65,7 +65,7 @@ class StaffController implements IStaffController {
     const staff = await this.staffService.findById(id, gymId);
     if (!staff) throw new ApiError('Staff not found', httpStatus.NOT_FOUND);
 
-    return sendSuccess(res, { staff }, 'Staff fetched successfully', 200);
+    return sendSuccess(res, staff, 'Staff fetched successfully', 200);
   };
 
   /**
