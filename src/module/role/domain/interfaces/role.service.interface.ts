@@ -7,4 +7,7 @@ export interface IRoleService {
   findOneByIdAndTenant: (id: string, tenant_id: string, client?: QueryExecutor) => Promise<Role>;
   findAll: (tenantId: string, client?: QueryExecutor) => Promise<Role[]>;
   replicateRoles: (tenantId: string, client?: QueryExecutor) => Promise<Role[]>;
+  createRole: (data: Pick<Role, 'name'>, tenantId: string, client?: QueryExecutor) => Promise<Role>;
+  updateRole: (id: string, data: Pick<Role, 'name'>, tenantId: string, client?: QueryExecutor) => Promise<Role>;
+  deleteRole: (id: string, tenantId: string, client?: QueryExecutor) => Promise<void>;
 }

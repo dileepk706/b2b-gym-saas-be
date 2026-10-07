@@ -7,4 +7,6 @@ export interface IRoleRepository {
   findOneById: (id: string, client?: QueryExecutor) => Promise<Role>;
   findOneByIdAndTenant: (id: string, tenant_id: string, client?: QueryExecutor) => Promise<Role>;
   create: (role: Pick<Role, 'name' | 'tenant_id'>, client?: QueryExecutor) => Promise<Role>;
+  update: (id: string, tenant_id: string, data: Partial<Role>, client?: QueryExecutor) => Promise<Role>;
+  delete: (id: string, tenant_id: string, client?: QueryExecutor) => Promise<Role>;
 }

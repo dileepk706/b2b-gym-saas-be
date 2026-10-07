@@ -35,6 +35,21 @@ roleRouter.get(
   asyncHandler((req, res) => getController().getAllStaffRoles(req, res)),
 );
 
+roleRouter.post(
+  '/',
+  asyncHandler((req, res) => getController().createRole(req, res)),
+);
+
+roleRouter.put(
+  '/:id',
+  asyncHandler((req, res) => getController().updateRole(req, res)),
+);
+
+roleRouter.delete(
+  '/:id',
+  asyncHandler((req, res) => getController().deleteRole(req, res)),
+);
+
 export const roleRouteConfig: ModuleRouteConfig = {
   basePath: '/roles',
   router: roleRouter,

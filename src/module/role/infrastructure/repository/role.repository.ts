@@ -57,6 +57,48 @@ class RoleRepository implements IRoleRepository {
     const r = await exec.query(query, values);
     return r.rows[0];
   };
+
+  update = async (
+    id: string,
+    tenant_id: string,
+    data: Partial<Role>,
+    client?: QueryExecutor,
+  ): Promise<Role> => {
+    const exec = client || this.pool;
+    
+    const setClauses: string[] = [];
+    const values: any[] = [id, tenant_id];
+    let paramIndex = 3;
+
+    for (const [key, value] of Object.entries(data)) {
+      setClauses.push(`${key} = $${paramIndex}`);
+      values.push(value);
+      paramIndex++;
+    }
+
+    const query = `
+      UPDATE roles
+      SET ${setClauses.join(', ')}
+      WHERE id = $1 AND tenant_id = $2
+      RETURNING *
+    `;
+
+    const r = await exec.query(query, values);
+    return r.rows[0];
+  };
+
+  delete = async (
+    id: string,
+    tenant_id: string,
+    client?: QueryExecutor,
+  ): Promise<Role> => {
+    const exec = client || this.pool;
+    const r = await exec.query(
+      'DELETE FROM roles WHERE id = $1 AND tenant_id = $2 RETURNING *',
+      [id, tenant_id]
+    );
+    return r.rows[0];
+  };
 }
 
 export default RoleRepository;
