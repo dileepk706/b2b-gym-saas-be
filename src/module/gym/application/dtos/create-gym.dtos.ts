@@ -8,6 +8,9 @@ export const createGymDtoSchema = z.object({
   email: z.email().optional(),
   state: z.string().optional(),
   logo_url: z.string().optional(),
+  opening_time: z.string().optional(),
+  closing_time: z.string().optional(),
+  maximum_capacity: z.number().int().positive().optional(),
 });
 
 export type CreateGymDto = z.infer<typeof createGymDtoSchema>;
